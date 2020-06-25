@@ -16,28 +16,34 @@ func main() {
 		tags       = flag.Bool("tags", false, "Dump tags")
 		media      = flag.Bool("media", false, "Dump media")
 		pages      = flag.Bool("pages", false, "Dump pages")
+		users      = flag.Bool("users", false, "Dump users")
+		all        = flag.Bool("all", false, "Dump all")
+		embed      = flag.Bool("embed", false, "Enable embed")
 		merge      = flag.Bool("merge", false, "Merged output (using jq as an external command)")
 	)
 	flag.Parse()
 
-	pathList := make([]wpdump.Path, 0, 5)
-	if *categories {
+	pathList := make([]wpdump.Path, 0, 6)
+	if *all || *categories {
 		pathList = append(pathList, wpdump.PATH_CATEGORIES)
 	}
-	if *pages {
+	if *all || *pages {
 		pathList = append(pathList, wpdump.PATH_PAGES)
 	}
-	if *tags {
+	if *all || *tags {
 		pathList = append(pathList, wpdump.PATH_TAGS)
 	}
-	if *media {
+	if *all || *media {
 		pathList = append(pathList, wpdump.PATH_MEDIA)
 	}
-	if *posts {
+	if *all || *posts {
 		pathList = append(pathList, wpdump.PATH_POSTS)
 	}
+	if *all || *users {
+		pathList = append(pathList, wpdump.PATH_USERS)
+	}
 
-	dumper := buildDumper(*url, *dir, *merge)
+	dumper := buildDumper(*url, *dir, *embed, *merge)
 	for _, path := range pathList {
 		_, err := dumper.Dump(path)
 		if err != nil {
@@ -50,13 +56,13 @@ func main() {
 	}
 }
 
-func buildDumper(baseUrl string, outputDir string, merge bool) wpdump.IDumper {
+func buildDumper(baseUrl string, outputDir string, embed bool, merge bool) wpdump.IDumper {
 	var dumper wpdump.IDumper
 
 	if merge {
-		dumper = wpdump.NewMergeDumper(baseUrl, outputDir)
+		dumper = wpdump.NewMergeDumper(wpdump.NewDumper(baseUrl, outputDir, embed), outputDir)
 	} else {
-		dumper = wpdump.NewDumper(baseUrl, outputDir)
+		dumper = wpdump.NewDumper(baseUrl, outputDir, embed)
 	}
 
 	dumper.SetReport(func(path wpdump.Path, filename string) {

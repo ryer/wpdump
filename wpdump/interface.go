@@ -15,4 +15,5 @@ const (
 	PATH_TAGS       = Path("tags")
 	PATH_MEDIA      = Path("media")
 	PATH_PAGES      = Path("pages")
+	PATH_USERS      = Path("users")
 )

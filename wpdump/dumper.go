@@ -14,12 +14,14 @@ type WPDumper struct {
 	baseUrl   string
 	outputDir string
 	report    Report
+	embed     bool
 }
 
-func NewDumper(baseUrl string, outputDir string) *WPDumper {
+func NewDumper(baseUrl string, outputDir string, embed bool) *WPDumper {
 	return &WPDumper{
 		baseUrl:   baseUrl,
 		outputDir: outputDir,
+		embed:     embed,
 	}
 }
 
@@ -37,16 +39,19 @@ func (dumper *WPDumper) Dump(path Path) ([]string, error) {
 	for page := 1; ; page++ {
 		url := fmt.Sprintf("%v/%v", dumper.baseUrl, path)
 
-		response, err := client.R().
-			SetQueryParams(map[string]string{
-				"page":     strconv.Itoa(page),
-				"per_page": "100",
-				"orderby":  "id",
-				"order":    "asc",
-				"_embed":   "1",
-				"xrandom":  strconv.FormatInt(time.Now().Unix(), 36),
-			}).
-			Get(url)
+		request := client.R()
+		request.SetQueryParams(map[string]string{
+			"page":     strconv.Itoa(page),
+			"per_page": "100",
+			"orderby":  "id",
+			"order":    "asc",
+			"xrandom":  strconv.FormatInt(time.Now().Unix(), 36),
+		})
+		if dumper.embed {
+			request.SetQueryParam("_embed", "1")
+		}
+
+		response, err := request.Get(url)
 		if err != nil {
 			return nil, err
 		}

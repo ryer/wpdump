@@ -13,9 +13,9 @@ type WPMergeDumper struct {
 	outputDir string
 }
 
-func NewMergeDumper(baseUrl string, outputDir string) *WPMergeDumper {
+func NewMergeDumper(dumper *WPDumper, outputDir string) *WPMergeDumper {
 	return &WPMergeDumper{
-		dumper:    NewDumper(baseUrl, outputDir),
+		dumper:    dumper,
 		outputDir: outputDir,
 	}
 }
@@ -30,6 +30,11 @@ func (merger *WPMergeDumper) Dump(path Path) ([]string, error) {
 }
 
 func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path Path) ([]string, error) {
+	err := exec.Command("jq", "--help").Run()
+	if err != nil {
+		return nil, err
+	}
+
 	files, err := dump(path)
 	if err != nil {
 		return nil, err
