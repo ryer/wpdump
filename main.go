@@ -7,28 +7,34 @@ import (
 	"os"
 )
 
+type DumpTarget struct {
+	tags       bool
+	users      bool
+	media      bool
+	posts      bool
+	pages      bool
+	categories bool
+}
+
 func main() {
 	var (
+		help       = pflag.BoolP("help", "", false, "show this message")
 		url        = pflag.StringP("url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
 		dir        = pflag.StringP("dir", "d", ".", "save json to this directory")
+		embed      = pflag.BoolP("embed", "e", false, "enable embed")
+		merge      = pflag.BoolP("merge", "m", false, "merged output (using jq as an external command)")
+		all        = pflag.BoolP("all", "a", false, "dump all")
 		posts      = pflag.BoolP("posts", "", false, "dump posts")
 		categories = pflag.BoolP("categories", "", false, "dump categories")
 		tags       = pflag.BoolP("tags", "", false, "dump tags")
 		media      = pflag.BoolP("media", "", false, "dump media")
 		pages      = pflag.BoolP("pages", "", false, "dump pages")
 		users      = pflag.BoolP("users", "", false, "dump users")
-		all        = pflag.BoolP("all", "a", false, "dump all")
-		embed      = pflag.BoolP("embed", "e", false, "enable embed")
-		merge      = pflag.BoolP("merge", "m", false, "merged output (using jq as an external command)")
-		help       = pflag.BoolP("help", "", false, "show this message")
 	)
+	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 
-	if *help {
-		pflag.Usage()
-		return
-	}
-
+	// decide dump target
 	pathList := make([]wpdump.Path, 0, 6)
 	if *all || *categories {
 		pathList = append(pathList, wpdump.PATH_CATEGORIES)
@@ -49,16 +55,17 @@ func main() {
 		pathList = append(pathList, wpdump.PATH_USERS)
 	}
 
+	if *help || len(pathList) == 0 {
+		pflag.Usage()
+		return
+	}
+
 	dumper := buildDumper(*url, *dir, *embed, *merge)
 	for _, path := range pathList {
 		_, err := dumper.Dump(path)
 		if err != nil {
 			errorExit(err)
 		}
-	}
-
-	if len(pathList) == 0 {
-		pflag.Usage()
 	}
 }
 
