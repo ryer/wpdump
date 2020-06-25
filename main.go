@@ -20,8 +20,14 @@ func main() {
 		all        = pflag.BoolP("all", "a", false, "dump all")
 		embed      = pflag.BoolP("embed", "e", false, "enable embed")
 		merge      = pflag.BoolP("merge", "m", false, "merged output (using jq as an external command)")
+		help       = pflag.BoolP("help", "", false, "show this message")
 	)
 	pflag.Parse()
+
+	if *help {
+		pflag.Usage()
+		return
+	}
 
 	pathList := make([]wpdump.Path, 0, 6)
 	if *all || *categories {
