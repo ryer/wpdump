@@ -1,27 +1,27 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/ryer/wpdump/wpdump"
+	"github.com/spf13/pflag"
 	"os"
 )
 
 func main() {
 	var (
-		url        = flag.String("url", "", "API Base URL (e.g. http://example.com/wp-json/wp/v2)")
-		dir        = flag.String("dir", ".", "Save json to this directory")
-		posts      = flag.Bool("posts", false, "Dump posts")
-		categories = flag.Bool("categories", false, "Dump categories")
-		tags       = flag.Bool("tags", false, "Dump tags")
-		media      = flag.Bool("media", false, "Dump media")
-		pages      = flag.Bool("pages", false, "Dump pages")
-		users      = flag.Bool("users", false, "Dump users")
-		all        = flag.Bool("all", false, "Dump all")
-		embed      = flag.Bool("embed", false, "Enable embed")
-		merge      = flag.Bool("merge", false, "Merged output (using jq as an external command)")
+		url        = pflag.StringP("url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
+		dir        = pflag.StringP("dir", "d", ".", "save json to this directory")
+		posts      = pflag.BoolP("posts", "", false, "dump posts")
+		categories = pflag.BoolP("categories", "", false, "dump categories")
+		tags       = pflag.BoolP("tags", "", false, "dump tags")
+		media      = pflag.BoolP("media", "", false, "dump media")
+		pages      = pflag.BoolP("pages", "", false, "dump pages")
+		users      = pflag.BoolP("users", "", false, "dump users")
+		all        = pflag.BoolP("all", "a", false, "dump all")
+		embed      = pflag.BoolP("embed", "e", false, "enable embed")
+		merge      = pflag.BoolP("merge", "m", false, "merged output (using jq as an external command)")
 	)
-	flag.Parse()
+	pflag.Parse()
 
 	pathList := make([]wpdump.Path, 0, 6)
 	if *all || *categories {
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	if len(pathList) == 0 {
-		flag.Usage()
+		pflag.Usage()
 	}
 }
 
