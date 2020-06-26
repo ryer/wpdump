@@ -1,0 +1,23 @@
+
+echo go mod tidy -v
+go mod tidy -v
+
+echo go fmt ./...
+go fmt ./...
+
+echo go mod verify
+go mod verify
+
+echo golint ./...
+go get golang.org/x/lint/golint >/dev/null 2>/dev/null
+golint ./... | grep -Ev 'exported (.+)?should have comment (.+)?or be unexported'
+go mod tidy
+
+echo go vet ./...
+go vet ./...
+
+echo go tool fix -diff .
+go tool fix -diff .
+
+echo go test ./...
+go test ./...
