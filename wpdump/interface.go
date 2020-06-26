@@ -10,10 +10,10 @@ type Report func(path Path, filename string)
 type Path string
 
 const (
-	PATH_POSTS      = Path("posts")
-	PATH_CATEGORIES = Path("categories")
-	PATH_TAGS       = Path("tags")
-	PATH_MEDIA      = Path("media")
-	PATH_PAGES      = Path("pages")
-	PATH_USERS      = Path("users")
+	Posts      = Path("posts")
+	Categories = Path("categories")
+	Tags       = Path("tags")
+	Media      = Path("media")
+	Pages      = Path("pages")
+	Users      = Path("users")
 )

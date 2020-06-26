@@ -7,68 +7,94 @@ import (
 	"os"
 )
 
-func main() {
-	var (
-		url        = pflag.StringP("url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
-		dir        = pflag.StringP("dir", "d", ".", "save json to this directory")
-		posts      = pflag.BoolP("posts", "", false, "dump posts")
-		categories = pflag.BoolP("categories", "", false, "dump categories")
-		tags       = pflag.BoolP("tags", "", false, "dump tags")
-		media      = pflag.BoolP("media", "", false, "dump media")
-		pages      = pflag.BoolP("pages", "", false, "dump pages")
-		users      = pflag.BoolP("users", "", false, "dump users")
-		all        = pflag.BoolP("all", "a", false, "dump all")
-		embed      = pflag.BoolP("embed", "e", false, "enable embed")
-		merge      = pflag.BoolP("merge", "m", false, "merged output (using jq as an external command)")
-		help       = pflag.BoolP("help", "", false, "show this message")
-	)
+type appFlags struct {
+	help       bool
+	url        string
+	dir        string
+	embed      bool
+	merge      bool
+	all        bool
+	tags       bool
+	users      bool
+	media      bool
+	posts      bool
+	pages      bool
+	categories bool
+}
+
+func parseFlags() *appFlags {
+	flags := &appFlags{}
+
+	pflag.BoolVarP(&flags.help, "help", "", false, "show this message")
+	pflag.StringVarP(&flags.url, "url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
+	pflag.StringVarP(&flags.dir, "dir", "d", ".", "save json to this directory")
+	pflag.BoolVarP(&flags.embed, "embed", "e", false, "enable embed")
+	pflag.BoolVarP(&flags.merge, "merge", "m", false, "merged output (using jq as an external command)")
+	pflag.BoolVarP(&flags.all, "all", "a", false, "dump all")
+	pflag.BoolVarP(&flags.posts, "posts", "", false, "dump posts")
+	pflag.BoolVarP(&flags.categories, "categories", "", false, "dump categories")
+	pflag.BoolVarP(&flags.tags, "tags", "", false, "dump tags")
+	pflag.BoolVarP(&flags.media, "media", "", false, "dump media")
+	pflag.BoolVarP(&flags.pages, "pages", "", false, "dump pages")
+	pflag.BoolVarP(&flags.users, "users", "", false, "dump users")
+
+	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 
-	if *help {
+	return flags
+}
+
+func main() {
+	flags := parseFlags()
+
+	dumpTarget := decideDumpTarget(flags)
+
+	if flags.help || flags.url == "" || len(dumpTarget) == 0 {
 		pflag.Usage()
 		return
 	}
 
-	pathList := make([]wpdump.Path, 0, 6)
-	if *all || *categories {
-		pathList = append(pathList, wpdump.PATH_CATEGORIES)
-	}
-	if *all || *pages {
-		pathList = append(pathList, wpdump.PATH_PAGES)
-	}
-	if *all || *tags {
-		pathList = append(pathList, wpdump.PATH_TAGS)
-	}
-	if *all || *media {
-		pathList = append(pathList, wpdump.PATH_MEDIA)
-	}
-	if *all || *posts {
-		pathList = append(pathList, wpdump.PATH_POSTS)
-	}
-	if *all || *users {
-		pathList = append(pathList, wpdump.PATH_USERS)
-	}
-
-	dumper := buildDumper(*url, *dir, *embed, *merge)
-	for _, path := range pathList {
+	dumper := buildDumper(flags)
+	for _, path := range dumpTarget {
 		_, err := dumper.Dump(path)
 		if err != nil {
 			errorExit(err)
 		}
 	}
-
-	if len(pathList) == 0 {
-		pflag.Usage()
-	}
 }
 
-func buildDumper(baseUrl string, outputDir string, embed bool, merge bool) wpdump.IDumper {
+func decideDumpTarget(flags *appFlags) []wpdump.Path {
+	dumpTarget := make([]wpdump.Path, 0, 6)
+
+	if flags.all || flags.categories {
+		dumpTarget = append(dumpTarget, wpdump.Categories)
+	}
+	if flags.all || flags.pages {
+		dumpTarget = append(dumpTarget, wpdump.Pages)
+	}
+	if flags.all || flags.tags {
+		dumpTarget = append(dumpTarget, wpdump.Tags)
+	}
+	if flags.all || flags.media {
+		dumpTarget = append(dumpTarget, wpdump.Media)
+	}
+	if flags.all || flags.posts {
+		dumpTarget = append(dumpTarget, wpdump.Posts)
+	}
+	if flags.all || flags.users {
+		dumpTarget = append(dumpTarget, wpdump.Users)
+	}
+
+	return dumpTarget
+}
+
+func buildDumper(flags *appFlags) wpdump.IDumper {
 	var dumper wpdump.IDumper
 
-	if merge {
-		dumper = wpdump.NewMergeDumper(wpdump.NewDumper(baseUrl, outputDir, embed), outputDir)
+	if flags.merge {
+		dumper = wpdump.NewMergeDumper(wpdump.NewDumper(flags.url, flags.dir, flags.embed), flags.dir)
 	} else {
-		dumper = wpdump.NewDumper(baseUrl, outputDir, embed)
+		dumper = wpdump.NewDumper(flags.url, flags.dir, flags.embed)
 	}
 
 	dumper.SetReport(func(path wpdump.Path, filename string) {

@@ -11,17 +11,19 @@ import (
 )
 
 type WPDumper struct {
-	baseUrl   string
+	baseURL   string
 	outputDir string
 	report    Report
+	client    *resty.Client
 	embed     bool
 }
 
-func NewDumper(baseUrl string, outputDir string, embed bool) *WPDumper {
+func NewDumper(baseURL string, outputDir string, embed bool) *WPDumper {
 	return &WPDumper{
-		baseUrl:   baseUrl,
+		baseURL:   baseURL,
 		outputDir: outputDir,
 		embed:     embed,
+		client:    resty.New(),
 	}
 }
 
@@ -30,16 +32,15 @@ func (dumper *WPDumper) SetReport(report Report) {
 }
 
 func (dumper *WPDumper) Dump(path Path) ([]string, error) {
-	client := resty.New()
-	client.
+	dumper.client.
 		SetRetryCount(2).
 		SetRetryWaitTime(5 * time.Second)
 
 	files := make([]string, 0, 1000)
 	for page := 1; ; page++ {
-		url := fmt.Sprintf("%v/%v", dumper.baseUrl, path)
+		url := fmt.Sprintf("%v/%v", dumper.baseURL, path)
 
-		request := client.R()
+		request := dumper.client.R()
 		request.SetQueryParams(map[string]string{
 			"page":     strconv.Itoa(page),
 			"per_page": "100",
