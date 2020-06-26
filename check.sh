@@ -1,23 +1,25 @@
 
-echo go mod tidy -v
+echo [mod tidy]
 go mod tidy -v
 
-echo go fmt ./...
+echo;echo [fmt]
 go fmt ./...
 
-echo go mod verify
+echo;echo [mod verify]
 go mod verify
 
-echo golint ./...
+echo;echo [lint]
 go get golang.org/x/lint/golint >/dev/null 2>/dev/null
-golint ./... | grep -Ev 'exported (.+)?should have comment (.+)?or be unexported'
+golint -min_confidence 0 ./... \
+  | grep -Ev "exported (.+)?should have comment (.+)?or be unexported" \
+  | grep -Ev "should have a package comment, unless it's in another file for this package"
 go mod tidy
 
-echo go vet ./...
+echo;echo [vet]
 go vet ./...
 
-echo go tool fix -diff .
+echo;echo [tool fix]
 go tool fix -diff .
 
-echo go test ./...
-go test ./...
+echo;echo [test]
+go test -v ./...
