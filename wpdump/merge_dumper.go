@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
+	"strings"
 )
 
 type WPMergeDumper struct {
@@ -30,25 +30,24 @@ func (merger *WPMergeDumper) Dump(path Path) ([]string, error) {
 }
 
 func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path Path) ([]string, error) {
-	err := exec.Command("jq", "--help").Run()
-	if err != nil {
-		return nil, err
-	}
-
 	files, err := dump(path)
 	if err != nil {
 		return nil, err
 	}
 
-	args := append([]string{"-c", "-s", "[.[][]]"}, files...)
-	cmd := exec.Command("jq", args...)
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, err
+	json := "["
+	for _, name := range files {
+		data, err := ioutil.ReadFile(name)
+		if err != nil {
+			return nil, err
+		}
+
+		json += strings.Trim(string(data), "[]") + ","
 	}
+	json = strings.TrimRight(json, ",") + "]"
 
 	filename := fmt.Sprintf("%v/%v.json", merger.outputDir, path)
-	err = ioutil.WriteFile(filename, output, 0644)
+	err = ioutil.WriteFile(filename, []byte(json), 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -65,4 +64,9 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 	}
 
 	return []string{filename}, nil
+}
+
+func (merger *WPMergeDumper) load(filename string) (string, error) {
+	data, err := ioutil.ReadFile(filename)
+	return string(data), err
 }

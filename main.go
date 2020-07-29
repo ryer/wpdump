@@ -29,7 +29,7 @@ func parseFlags() *appFlags {
 	pflag.StringVarP(&flags.url, "url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
 	pflag.StringVarP(&flags.dir, "dir", "d", ".", "save json to this directory")
 	pflag.BoolVarP(&flags.embed, "embed", "e", false, "enable embed")
-	pflag.BoolVarP(&flags.merge, "merge", "m", false, "merged output (using jq as an external command)")
+	pflag.BoolVarP(&flags.merge, "merge", "m", false, "merged output")
 	pflag.BoolVarP(&flags.all, "all", "a", false, "dump all")
 	pflag.BoolVarP(&flags.posts, "posts", "", false, "dump posts")
 	pflag.BoolVarP(&flags.categories, "categories", "", false, "dump categories")
