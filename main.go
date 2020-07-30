@@ -20,7 +20,7 @@ type appFlags struct {
 	posts      bool
 	pages      bool
 	categories bool
-	custom     string
+	custom     []string
 }
 
 func parseFlags() *appFlags {
@@ -38,8 +38,7 @@ func parseFlags() *appFlags {
 	pflag.BoolVarP(&flags.media, "media", "", false, "dump media")
 	pflag.BoolVarP(&flags.pages, "pages", "", false, "dump pages")
 	pflag.BoolVarP(&flags.users, "users", "", false, "dump users")
-	pflag.StringVarP(&flags.custom, "custom", "", "", "dump custom type")
-
+	pflag.StringArrayVarP(&flags.custom, "custom", "", []string{}, "dump custom type (support multiple flags)")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 
@@ -86,8 +85,11 @@ func decideDumpTarget(flags *appFlags) []wpdump.Path {
 	if flags.all || flags.users {
 		dumpTarget = append(dumpTarget, wpdump.Users)
 	}
-	if flags.custom != "" {
-		dumpTarget = append(dumpTarget, wpdump.Path(flags.custom))
+	if len(flags.custom) != 0 {
+		for _, path := range flags.custom {
+			dumpTarget = append(dumpTarget, wpdump.Path(path))
+
+		}
 	}
 
 	return dumpTarget
