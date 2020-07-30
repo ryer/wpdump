@@ -23,6 +23,7 @@ Usage of wpdump:
       --media           dump media
       --pages           dump pages
       --users           dump users
+      --custom string   dump custom type
 ```
 
 ## Installation
