@@ -105,7 +105,7 @@ func buildDumper(flags *appFlags) wpdump.IDumper {
 	}
 
 	dumper.SetReport(func(path wpdump.Path, filename string) {
-		fmt.Println(fmt.Sprintf("Dumped(%v): %v", path, filename))
+		fmt.Printf("Dumped(%v): %v\n", path, filename)
 	})
 
 	return dumper

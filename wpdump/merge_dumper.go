@@ -65,8 +65,3 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 
 	return []string{filename}, nil
 }
-
-func (merger *WPMergeDumper) load(filename string) (string, error) {
-	data, err := ioutil.ReadFile(filename)
-	return string(data), err
-}
