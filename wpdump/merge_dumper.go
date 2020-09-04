@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -44,6 +45,8 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 		}
 
 		json += strings.Trim(string(data), "[]") + ","
+
+		runtime.GC()
 	}
 
 	json = strings.TrimRight(json, ",") + "]"
