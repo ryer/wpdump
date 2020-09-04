@@ -12,6 +12,7 @@ $ wpdump -u 'http://example.com/wp-json/wp/v2' --tags --posts --custom books -m
 $ wpdump
 Usage of wpdump:
       --help                 show this message
+      --version              show version
   -u, --url string           api base url (e.g. http://example.com/wp-json/wp/v2)
   -d, --dir string           save json to this directory (default ".")
   -e, --embed                enable embed
@@ -29,7 +30,7 @@ Usage of wpdump:
 ## Installation
 
 ```
-$ go get github.com/ryer/wpdump
+$ go get -u github.com/ryer/wpdump
 ```
 
 ## License

@@ -1,10 +1,11 @@
 package wpdump
 
 import (
-	"github.com/jarcoal/httpmock"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/jarcoal/httpmock"
 )
 
 func TestDump(t *testing.T) {
@@ -34,8 +35,10 @@ func NewMockDumper(mockJSON string) *WPDumper {
 	dumper := NewDumper("https://example.com/wp-json/wp/v2", "/tmp", false)
 
 	httpmock.ActivateNonDefault(dumper.client.GetClient())
+
 	mockHeader := http.Header{}
 	mockHeader.Add("X-WP-TotalPages", "1")
+
 	responder := httpmock.ResponderFromResponse(&http.Response{
 		Status:        "200 OK",
 		StatusCode:    200,

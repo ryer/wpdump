@@ -3,11 +3,17 @@ package wpdump
 import (
 	"errors"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/go-resty/resty/v2"
+)
+
+var (
+	ErrNotOK          = errors.New("HTTP Status is not OK")
+	ErrNoWPTotalPages = errors.New("failed to retrieve 'X-WP-TotalPages'")
 )
 
 type WPDumper struct {
@@ -32,11 +38,16 @@ func (dumper *WPDumper) SetReport(report Report) {
 }
 
 func (dumper *WPDumper) Dump(path Path) ([]string, error) {
+	const RetryCount = 2
+
+	const RetryWaitTime = 5 * time.Second
+
 	dumper.client.
-		SetRetryCount(2).
-		SetRetryWaitTime(5 * time.Second)
+		SetRetryCount(RetryCount).
+		SetRetryWaitTime(RetryWaitTime)
 
 	files := make([]string, 0, 1000)
+
 	for page := 1; ; page++ {
 		url := fmt.Sprintf("%v/%v", dumper.baseURL, path)
 
@@ -48,6 +59,7 @@ func (dumper *WPDumper) Dump(path Path) ([]string, error) {
 			"order":    "asc",
 			"xrandom":  strconv.FormatInt(time.Now().Unix(), 36),
 		})
+
 		if dumper.embed {
 			request.SetQueryParam("_embed", "1")
 		}
@@ -56,18 +68,20 @@ func (dumper *WPDumper) Dump(path Path) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		if response.StatusCode() != http.StatusOK {
-			return nil, fmt.Errorf("HTTP Status is not OK (%v)", url)
+			return nil, ErrNotOK
 		}
 
 		total, err := strconv.Atoi(response.Header().Get("X-WP-TotalPages"))
 		if err != nil {
-			return nil, errors.New("failed to retrieve 'X-WP-TotalPages'")
+			return nil, ErrNoWPTotalPages
 		}
 
 		body := response.Body()
 		filename := fmt.Sprintf("%v/%v%04d.json", dumper.outputDir, path, page)
-		err = ioutil.WriteFile(filename, body, 0644)
+
+		err = ioutil.WriteFile(filename, body, 0o644)
 		if err != nil {
 			return nil, err
 		}
@@ -75,6 +89,7 @@ func (dumper *WPDumper) Dump(path Path) ([]string, error) {
 		if dumper.report != nil {
 			dumper.report(path, filename)
 		}
+
 		files = append(files, filename)
 
 		if total <= page {

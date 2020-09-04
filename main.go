@@ -2,13 +2,21 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/ryer/wpdump/wpdump"
 	"github.com/spf13/pflag"
-	"os"
+)
+
+var (
+	Name     = "wpdump"
+	Version  = "latest"
+	Revision = "latest"
 )
 
 type appFlags struct {
 	help       bool
+	version    bool
 	url        string
 	dir        string
 	embed      bool
@@ -27,6 +35,7 @@ func parseFlags() *appFlags {
 	flags := &appFlags{}
 
 	pflag.BoolVarP(&flags.help, "help", "", false, "show this message")
+	pflag.BoolVarP(&flags.version, "version", "", false, "show version")
 	pflag.StringVarP(&flags.url, "url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
 	pflag.StringVarP(&flags.dir, "dir", "d", ".", "save json to this directory")
 	pflag.BoolVarP(&flags.embed, "embed", "e", false, "enable embed")
@@ -50,12 +59,20 @@ func main() {
 
 	dumpTarget := decideDumpTarget(flags)
 
+	if flags.version {
+		fmt.Printf("%v version %v (%v)", Name, Version, Revision)
+
+		return
+	}
+
 	if flags.help || flags.url == "" || len(dumpTarget) == 0 {
 		pflag.Usage()
+
 		return
 	}
 
 	dumper := buildDumper(flags)
+
 	for _, path := range dumpTarget {
 		_, err := dumper.Dump(path)
 		if err != nil {
@@ -70,25 +87,30 @@ func decideDumpTarget(flags *appFlags) []wpdump.Path {
 	if flags.all || flags.categories {
 		dumpTarget = append(dumpTarget, wpdump.Categories)
 	}
+
 	if flags.all || flags.pages {
 		dumpTarget = append(dumpTarget, wpdump.Pages)
 	}
+
 	if flags.all || flags.tags {
 		dumpTarget = append(dumpTarget, wpdump.Tags)
 	}
+
 	if flags.all || flags.media {
 		dumpTarget = append(dumpTarget, wpdump.Media)
 	}
+
 	if flags.all || flags.posts {
 		dumpTarget = append(dumpTarget, wpdump.Posts)
 	}
+
 	if flags.all || flags.users {
 		dumpTarget = append(dumpTarget, wpdump.Users)
 	}
+
 	if len(flags.custom) != 0 {
 		for _, path := range flags.custom {
 			dumpTarget = append(dumpTarget, wpdump.Path(path))
-
 		}
 	}
 

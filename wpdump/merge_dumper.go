@@ -36,6 +36,7 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 	}
 
 	json := "["
+
 	for _, name := range files {
 		data, err := ioutil.ReadFile(name)
 		if err != nil {
@@ -44,10 +45,12 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 
 		json += strings.Trim(string(data), "[]") + ","
 	}
+
 	json = strings.TrimRight(json, ",") + "]"
 
 	filename := fmt.Sprintf("%v/%v.json", merger.outputDir, path)
-	err = ioutil.WriteFile(filename, []byte(json), 0644)
+
+	err = ioutil.WriteFile(filename, []byte(json), 0o644)
 	if err != nil {
 		return nil, err
 	}
