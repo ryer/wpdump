@@ -74,6 +74,7 @@ check:
 	@echo
 	@echo [golangci-lint]
 	@golangci-lint run --enable 'asciicheck,bodyclose,depguard,dogsled,dupl,exhaustive,exportloopref,funlen,gochecknoinits,gocognit,goconst,gocritic,gocyclo,godot,godox,goerr113,gofmt,gofumpt,goheader,goimports,golint,gomnd,gomodguard,goprintffuncname,interfacer,misspell,nakedret,nestif,nlreturn,noctx,nolintlint,prealloc,rowserrcheck,scopelint,sqlclosecheck,stylecheck,unconvert,unparam,whitespace,wsl'
+
 	@echo
 	@echo [mod tidy]
 	@go mod tidy
