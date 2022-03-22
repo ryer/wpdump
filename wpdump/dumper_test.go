@@ -37,7 +37,7 @@ func NewMockDumper(mockJSON string) *WPDumper {
 	httpmock.ActivateNonDefault(dumper.client.GetClient())
 
 	mockHeader := http.Header{}
-	mockHeader.Add("X-WP-TotalPages", "1")
+	mockHeader.Add("X-WP-TotalPages", "2")
 
 	responder := httpmock.ResponderFromResponse(&http.Response{
 		Status:        "200 OK",

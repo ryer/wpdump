@@ -44,12 +44,12 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 			return nil, err
 		}
 
-		json += strings.Trim(string(data), "[]") + ","
+		json += strings.Trim(string(data), "[]") + ",\n"
 
 		runtime.GC()
 	}
 
-	json = strings.TrimRight(json, ",") + "]"
+	json = strings.TrimRight(json, ",\n") + "]"
 
 	filename := fmt.Sprintf("%v/%v.json", merger.outputDir, path)
 

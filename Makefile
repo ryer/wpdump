@@ -73,7 +73,7 @@ check:
 
 	@echo
 	@echo [golangci-lint]
-	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.45.0 golangci-lint run --enable-all --disable 'scopelint,golint,interfacer,lll,varnamelen,ireturn,cyclop,maligned,exhaustivestruct,paralleltest,wrapcheck,gosec,gomnd,forbidigo,testpackage,gochecknoglobals'
+	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.45.0 golangci-lint run --enable-all --disable 'wsl,scopelint,golint,interfacer,lll,varnamelen,ireturn,cyclop,maligned,exhaustivestruct,paralleltest,wrapcheck,gosec,gomnd,forbidigo,testpackage,gochecknoglobals'
 
 	@echo
 	@echo [mod tidy]

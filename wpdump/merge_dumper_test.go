@@ -2,6 +2,7 @@ package wpdump
 
 import (
 	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -23,7 +24,9 @@ func TestMergeDump(t *testing.T) {
 		t.Fatalf("an error occurred (%v)", err)
 	}
 
-	if string(data) != mockJSON {
+	innerJSON := strings.Trim(mockJSON, "[]")
+	expected := "[" + innerJSON + ",\n" + innerJSON + "]"
+	if string(data) != expected {
 		t.Fatalf("data mismatch (%v)", string(data))
 	}
 }
