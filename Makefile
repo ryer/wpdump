@@ -1,6 +1,5 @@
 
 NAME := wpdump
-VERSION := v0.0.2
 REVISION := $(shell git rev-parse --short HEAD)
 
 ##
@@ -9,7 +8,6 @@ REVISION := $(shell git rev-parse --short HEAD)
 
 GOARCH := amd64
 LDFLAGS := -X 'main.Name=$(NAME)' \
-           -X 'main.Version=$(VERSION)' \
            -X 'main.Revision=$(REVISION)'
 
 ifeq ($(DEBUG), 1)

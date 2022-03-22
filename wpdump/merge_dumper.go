@@ -44,7 +44,10 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 			return nil, err
 		}
 
-		json += strings.Trim(string(data), "[]") + ",\n"
+		inner := strings.Trim(string(data), "[]")
+		if inner != "" {
+			json += inner + ",\n"
+		}
 
 		runtime.GC()
 	}

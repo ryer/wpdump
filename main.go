@@ -10,7 +10,7 @@ import (
 
 var (
 	Name     = "wpdump"
-	Version  = "latest"
+	Version  = "0.0.3"
 	Revision = "latest"
 )
 
