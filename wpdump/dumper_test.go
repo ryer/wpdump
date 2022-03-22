@@ -17,7 +17,7 @@ func TestDump(t *testing.T) {
 		t.Fatalf("an error occurred (%v)", err)
 	}
 
-	if files[0] != "/tmp/users0001.json" {
+	if files[0] != "./testdata/users0001.json" {
 		t.Fatalf("file name mismatch (%v)", files[0])
 	}
 
@@ -32,7 +32,7 @@ func TestDump(t *testing.T) {
 }
 
 func NewMockDumper(mockJSON string) *WPDumper {
-	dumper := NewDumper("https://example.com/wp-json/wp/v2", "/tmp", false)
+	dumper := NewDumper("https://example.com/wp-json/wp/v2", "./testdata", false)
 
 	httpmock.ActivateNonDefault(dumper.client.GetClient())
 

@@ -1,6 +1,6 @@
 
 NAME := wpdump
-VERSION := v0.0.1
+VERSION := v0.0.2
 REVISION := $(shell git rev-parse --short HEAD)
 
 ##
@@ -13,7 +13,7 @@ LDFLAGS := -X 'main.Name=$(NAME)' \
            -X 'main.Revision=$(REVISION)'
 
 ifeq ($(DEBUG), 1)
-	BUILD_OPTIONS := -race -tags DEBUG -ldflags="$(LDFLAGS)"
+	BUILD_OPTIONS := -gcflags=all="-N -l" -tags DEBUG -ldflags="$(LDFLAGS)"
 	BUILD_MODE := debug
 else
 	BUILD_OPTIONS := -ldflags="-s -w $(LDFLAGS)"
@@ -68,12 +68,12 @@ check:
 
 	@echo
 	@echo [gofumpt]
-	@go get -u mvdan.cc/gofumpt
+	@go install mvdan.cc/gofumpt@latest
 	@gofumpt -l -w .
 
 	@echo
 	@echo [golangci-lint]
-	@golangci-lint run --enable 'asciicheck,bodyclose,depguard,dogsled,dupl,exhaustive,exportloopref,funlen,gochecknoinits,gocognit,goconst,gocritic,gocyclo,godot,godox,goerr113,gofmt,gofumpt,goheader,goimports,golint,gomnd,gomodguard,goprintffuncname,interfacer,misspell,nakedret,nestif,nlreturn,noctx,nolintlint,prealloc,rowserrcheck,scopelint,sqlclosecheck,stylecheck,unconvert,unparam,whitespace,wsl'
+	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.45.0 golangci-lint run --enable-all --disable 'scopelint,golint,interfacer,lll,varnamelen,ireturn,cyclop,maligned,exhaustivestruct,paralleltest,wrapcheck,gosec,gomnd,forbidigo,testpackage,gochecknoglobals'
 
 	@echo
 	@echo [mod tidy]

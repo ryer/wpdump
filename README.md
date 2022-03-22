@@ -30,7 +30,7 @@ Usage of wpdump:
 ## Installation
 
 ```
-$ go get -u github.com/ryer/wpdump
+$ go install github.com/ryer/wpdump@latest
 ```
 
 ## License
