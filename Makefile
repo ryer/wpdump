@@ -57,11 +57,11 @@ clean:
 ##
 
 check:
-	@echo [tool fix]
-	@go tool fix -diff .
+	@echo [go fix]
+	@go fix ./...
 
 	@echo
-	@echo [fmt]
+	@echo [go fmt]
 	@go fmt ./...
 
 	@echo
@@ -74,15 +74,15 @@ check:
 	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.45.0 golangci-lint run --enable-all --disable 'wsl,scopelint,golint,interfacer,lll,varnamelen,ireturn,cyclop,maligned,exhaustivestruct,paralleltest,wrapcheck,gosec,gomnd,forbidigo,testpackage,gochecknoglobals'
 
 	@echo
-	@echo [mod tidy]
+	@echo [go mod tidy]
 	@go mod tidy
 
 	@echo
-	@echo [mod verify]
+	@echo [go mod verify]
 	@go mod verify
 
 	@echo
-	@echo [test]
+	@echo [go test]
 	@go test ./...
 
 .PHONY: all linux darwin windows clean
