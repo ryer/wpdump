@@ -89,7 +89,7 @@ func (merger *WPMergeDumper) merge(dump func(path Path) ([]string, error), path 
 	for _, name := range files {
 		if err := os.Remove(name); err != nil {
 			if merger.reporter != nil {
-				merger.reporter.Warn(fmt.Sprintf("failed to remove temporary file: %s", name))
+				merger.reporter.Warn("failed to remove temporary file: " + name)
 			}
 		}
 	}

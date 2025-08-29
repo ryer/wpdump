@@ -59,7 +59,7 @@ func (dumper *WPDumper) processResponse(response *resty.Response, path Path, pag
 		return 0, "", ErrNotOK
 	}
 
-	total, err := strconv.Atoi(response.Header().Get("X-WP-TotalPages"))
+	total, err := strconv.Atoi(response.Header().Get("X-Wp-Totalpages"))
 	if err != nil {
 		return 0, "", ErrNoWPTotalPages
 	}

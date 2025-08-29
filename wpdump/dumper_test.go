@@ -1,8 +1,8 @@
 package wpdump
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -21,7 +21,7 @@ func TestDump(t *testing.T) {
 		t.Fatalf("file name mismatch (%v)", files[0])
 	}
 
-	data, err := ioutil.ReadFile(files[0])
+	data, err := os.ReadFile(files[0])
 	if err != nil {
 		t.Fatalf("an error occurred (%v)", err)
 	}
@@ -37,11 +37,11 @@ func NewMockDumper(mockJSON string) *WPDumper {
 	httpmock.ActivateNonDefault(dumper.client.GetClient())
 
 	mockHeader := http.Header{}
-	mockHeader.Add("X-WP-TotalPages", "2")
+	mockHeader.Add("X-Wp-Totalpages", "2")
 
 	responder := httpmock.ResponderFromResponse(&http.Response{
 		Status:        "200 OK",
-		StatusCode:    200,
+		StatusCode:    http.StatusOK,
 		Body:          httpmock.NewRespBodyFromString(mockJSON),
 		Header:        mockHeader,
 		ContentLength: int64(len(mockJSON)),

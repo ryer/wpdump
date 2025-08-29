@@ -18,7 +18,7 @@ else
 	BUILD_MODE := release
 endif
 
-DOCKER_GO := docker run -it -v "$(PWD):/go" -e GOPATH= -e GOOS=$$GOOS -e GOARCH=$$GOARCH golang:latest go
+DOCKER_GO := docker run -it -v "$(PWD):/go" -e GOPATH= -e GOOS=$$GOOS -e GOARCH=$$GOARCH golang:1.24 go
 GO_SRCS := $(shell find . -type f -name '*.go')
 
 ##
@@ -66,12 +66,11 @@ check:
 
 	@echo
 	@echo [gofumpt]
-	@go install mvdan.cc/gofumpt@latest
-	@gofumpt -l -w .
+	@go run mvdan.cc/gofumpt -l -w .
 
 	@echo
 	@echo [golangci-lint]
-	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.45.0 golangci-lint run --enable-all --disable 'wsl,scopelint,golint,interfacer,lll,varnamelen,ireturn,cyclop,maligned,exhaustivestruct,paralleltest,wrapcheck,gosec,gomnd,forbidigo,testpackage,gochecknoglobals'
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --enable-all --disable 'wsl,lll,varnamelen,ireturn,cyclop,paralleltest,wrapcheck,gosec,forbidigo,testpackage,gochecknoglobals,depguard,exhaustruct,intrange,mnd,tenv,funlen'
 
 	@echo
 	@echo [go mod tidy]
@@ -85,4 +84,4 @@ check:
 	@echo [go test]
 	@go test ./...
 
-.PHONY: all linux darwin windows clean
+.PHONY: all linux darwin windows clean check

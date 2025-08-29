@@ -11,7 +11,7 @@ import (
 
 var (
 	Name     = "wpdump"
-	Version  = "1.0.0"
+	Version  = "1.0.1"
 	Revision = "latest"
 )
 
@@ -60,6 +60,10 @@ func parseFlags() *appFlags {
 }
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	flags := parseFlags()
 
 	dumpTarget := decideDumpTarget(flags)
@@ -67,13 +71,13 @@ func main() {
 	if flags.version {
 		fmt.Printf("%v version %v (%v)", Name, Version, Revision)
 
-		return
+		return 0
 	}
 
 	if flags.help || flags.url == "" || len(dumpTarget) == 0 {
 		pflag.Usage()
 
-		return
+		return 1
 	}
 
 	dumper, reporter := buildDumper(flags)
@@ -84,10 +88,12 @@ func main() {
 		_, err := dumper.Dump(path)
 		if err != nil {
 			// Error is already reported by the reporter
-			os.Exit(1)
+			return 1
 		}
 	}
 	reporter.End(time.Since(start))
+
+	return 0
 }
 
 func decideDumpTarget(flags *appFlags) []wpdump.Path {

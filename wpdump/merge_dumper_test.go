@@ -1,7 +1,7 @@
 package wpdump
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestMergeDump(t *testing.T) {
 		t.Fatalf("file name mismatch (%v)", files[0])
 	}
 
-	data, err := ioutil.ReadFile(files[0])
+	data, err := os.ReadFile(files[0])
 	if err != nil {
 		t.Fatalf("an error occurred (%v)", err)
 	}

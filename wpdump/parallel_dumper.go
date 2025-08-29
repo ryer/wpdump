@@ -38,7 +38,7 @@ func (pd *ParallelDumper) getTotalPages(path Path) (int, error) {
 		return 0, ErrNotOK
 	}
 
-	return strconv.Atoi(response.Header().Get("X-WP-TotalPages"))
+	return strconv.Atoi(response.Header().Get("X-Wp-Totalpages"))
 }
 
 func (pd *ParallelDumper) downloadPage(ctx context.Context, path Path, page int) (string, error) {
