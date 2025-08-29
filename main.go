@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ryer/wpdump/wpdump"
 	"github.com/spf13/pflag"
@@ -10,7 +11,7 @@ import (
 
 var (
 	Name     = "wpdump"
-	Version  = "0.0.3"
+	Version  = "1.0.0"
 	Revision = "latest"
 )
 
@@ -19,6 +20,8 @@ type appFlags struct {
 	version    bool
 	url        string
 	dir        string
+	verbose    bool
+	parallel   int
 	embed      bool
 	merge      bool
 	all        bool
@@ -38,6 +41,8 @@ func parseFlags() *appFlags {
 	pflag.BoolVarP(&flags.version, "version", "", false, "show version")
 	pflag.StringVarP(&flags.url, "url", "u", "", "api base url (e.g. http://example.com/wp-json/wp/v2)")
 	pflag.StringVarP(&flags.dir, "dir", "d", ".", "save json to this directory")
+	pflag.IntVarP(&flags.parallel, "parallel", "p", 1, "parallel download")
+	pflag.BoolVarP(&flags.verbose, "verbose", "v", false, "verbose output")
 	pflag.BoolVarP(&flags.embed, "embed", "e", false, "enable embed")
 	pflag.BoolVarP(&flags.merge, "merge", "m", false, "merged output")
 	pflag.BoolVarP(&flags.all, "all", "a", false, "dump all")
@@ -71,69 +76,94 @@ func main() {
 		return
 	}
 
-	dumper := buildDumper(flags)
+	dumper, reporter := buildDumper(flags)
+	reporter.Start()
+	start := time.Now()
 
 	for _, path := range dumpTarget {
 		_, err := dumper.Dump(path)
 		if err != nil {
-			errorExit(err)
+			// Error is already reported by the reporter
+			os.Exit(1)
 		}
 	}
+	reporter.End(time.Since(start))
 }
 
 func decideDumpTarget(flags *appFlags) []wpdump.Path {
-	dumpTarget := make([]wpdump.Path, 0, 7)
-
-	if flags.all || flags.categories {
-		dumpTarget = append(dumpTarget, wpdump.Categories)
+	targets := map[wpdump.Path]bool{
+		wpdump.Categories: flags.categories,
+		wpdump.Pages:      flags.pages,
+		wpdump.Tags:       flags.tags,
+		wpdump.Media:      flags.media,
+		wpdump.Posts:      flags.posts,
+		wpdump.Users:      flags.users,
 	}
 
-	if flags.all || flags.pages {
-		dumpTarget = append(dumpTarget, wpdump.Pages)
-	}
-
-	if flags.all || flags.tags {
-		dumpTarget = append(dumpTarget, wpdump.Tags)
-	}
-
-	if flags.all || flags.media {
-		dumpTarget = append(dumpTarget, wpdump.Media)
-	}
-
-	if flags.all || flags.posts {
-		dumpTarget = append(dumpTarget, wpdump.Posts)
-	}
-
-	if flags.all || flags.users {
-		dumpTarget = append(dumpTarget, wpdump.Users)
-	}
-
-	if len(flags.custom) != 0 {
-		for _, path := range flags.custom {
-			dumpTarget = append(dumpTarget, wpdump.Path(path))
+	dumpTarget := make([]wpdump.Path, 0, len(targets))
+	for path, enabled := range targets {
+		if flags.all || enabled {
+			dumpTarget = append(dumpTarget, path)
 		}
+	}
+
+	for _, path := range flags.custom {
+		dumpTarget = append(dumpTarget, wpdump.Path(path))
 	}
 
 	return dumpTarget
 }
 
-func buildDumper(flags *appFlags) wpdump.IDumper {
-	var dumper wpdump.IDumper
-
-	if flags.merge {
-		dumper = wpdump.NewMergeDumper(wpdump.NewDumper(flags.url, flags.dir, flags.embed), flags.dir)
-	} else {
-		dumper = wpdump.NewDumper(flags.url, flags.dir, flags.embed)
-	}
-
-	dumper.SetReport(func(path wpdump.Path, filename string) {
-		fmt.Printf("Dumped(%v): %v\n", path, filename)
-	})
-
-	return dumper
+type ConsoleReporter struct {
+	verbose bool
 }
 
-func errorExit(msg interface{}) {
-	fmt.Println("Error:", msg)
-	os.Exit(1)
+func (r *ConsoleReporter) Start() {
+	fmt.Println("Dump start")
+}
+
+func (r *ConsoleReporter) End(elapsed time.Duration) {
+	if r.verbose {
+		fmt.Printf("Dump end (elapsed: %v)\n", elapsed)
+	} else {
+		fmt.Println("Dump end")
+	}
+}
+
+func (r *ConsoleReporter) Success(path wpdump.Path, filename string) {
+	if r.verbose {
+		fmt.Printf("Dump progress (%v): %v\n", path, filename)
+	}
+}
+
+func (r *ConsoleReporter) Error(err error) {
+	// Errors are always displayed
+	fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+}
+
+func (r *ConsoleReporter) Warn(message string) {
+	if r.verbose {
+		fmt.Fprintf(os.Stderr, "Warn: %s\n", message)
+	}
+}
+
+func buildDumper(flags *appFlags) (wpdump.IDumper, wpdump.Reporter) {
+	var dumper wpdump.IDumper
+	reporter := &ConsoleReporter{verbose: flags.verbose}
+
+	dumperImpl := wpdump.NewDumper(flags.url, flags.dir, flags.embed)
+
+	if flags.parallel > 1 {
+		dumper = wpdump.NewParallelDumper(dumperImpl, flags.parallel)
+	} else {
+		dumper = dumperImpl
+	}
+
+	if flags.merge {
+		dumper = wpdump.NewMergeDumper(dumper, flags.dir)
+	}
+
+	dumper.SetReporter(reporter)
+
+	return dumper, reporter
 }

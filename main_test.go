@@ -33,14 +33,14 @@ func TestBuildDumper(t *testing.T) {
 	flags := &appFlags{}
 
 	flags.merge = false
-	a := buildDumper(flags)
+	a, _ := buildDumper(flags)
 
 	if reflect.TypeOf(a).String() != "*wpdump.WPDumper" {
 		t.Fatalf("is not WPDump (%v)", reflect.TypeOf(a))
 	}
 
 	flags.merge = true
-	a = buildDumper(flags)
+	a, _ = buildDumper(flags)
 
 	if reflect.TypeOf(a).String() != "*wpdump.WPMergeDumper" {
 		t.Fatalf("is not MergeDumper (%v)", reflect.TypeOf(a))
