@@ -15,6 +15,8 @@ Usage of wpdump:
       --version              show version
   -u, --url string           api base url (e.g. http://example.com/wp-json/wp/v2)
   -d, --dir string           save json to this directory (default ".")
+  -p, --parallel int         parallel download (default 1)
+  -v, --verbose              verbose output
   -e, --embed                enable embed
   -m, --merge                merged output
   -a, --all                  dump all
